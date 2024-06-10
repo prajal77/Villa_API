@@ -18,8 +18,8 @@ namespace VillaAPI.Controllers
         {
             return Ok(VillaStore.villaList) ;
         }
-
-        [HttpGet("id:int")]
+        //to give explicit name of the controller
+        [HttpGet("id:int", Name ="GetVilla" )]
         //[ProducesResponseType(404)]// to document responseTime 
         [ProducesResponseType(400)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -40,11 +40,11 @@ namespace VillaAPI.Controllers
             }
             return Ok(villa);
         }
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        [HttpPost]
         /*
         when we are working with http post we receive object [FromBody]
         The [FromBody] attribute tells ASP.NET Core to get the value of villaDTO from the body of the HTTP request.
@@ -52,7 +52,20 @@ namespace VillaAPI.Controllers
          */
         public ActionResult<VillaDTO> CreateVilla([FromBody]VillaDTO villaDTO)
         {
-            if(villaDTO == null)
+            //For custom validation 
+            //ModelState mean VillaDTO
+            /*if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }*/
+
+            if(VillaStore.villaList.FirstOrDefault(u=> u.name.ToLower() == villaDTO.name.ToLower() ) != null)
+            {
+                ModelState.AddModelError("CustomError", "Villa already Exists!");
+                return BadRequest(ModelState);
+            }
+
+                if (villaDTO == null)
             {
                 return BadRequest(villaDTO);
             }
@@ -62,8 +75,38 @@ namespace VillaAPI.Controllers
             }
             villaDTO.id = VillaStore.villaList.OrderByDescending(u => u.id).FirstOrDefault().id+1;
             VillaStore.villaList.Add(villaDTO);
-            return Ok(villaDTO);
+
+            //to create link to call GetVilla by Id 
+            // route =Name, object?routeValue, object?value
+
+            return CreatedAtRoute("GetVilla", new { Id = villaDTO.id }, villaDTO);
+
+            //return Ok(villaDTO);
         }
+
+
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+
+        [HttpDelete("{id:int}", Name ="DeleteVilla") ]
+
+        public IActionResult DeleteVilla(int id)
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+            }
+            var villa = VillaStore.villaList.FirstOrDefault(u => u.id == id);
+            if(villa == null)
+            {
+                return NotFound();
+            }
+            VillaStore.villaList.Remove(villa);
+            return NoContent();
+        }
+
     }
 
 }
