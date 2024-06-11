@@ -107,6 +107,23 @@ namespace VillaAPI.Controllers
             return NoContent();
         }
 
+
+        [HttpPut("{id:int}", Name = "UpdateVilla")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdateVilla(int id, [FromBody] VillaDTO villaDTO)
+        {
+            if (villaDTO == null || id != villaDTO.id)
+            {
+                return BadRequest();
+            }
+            var villa = VillaStore.villaList.FirstOrDefault(u => u.id == id);
+            villa.name = villaDTO.name;
+            villa.sqft = villaDTO.sqft;
+            villa.occupancy = villaDTO.occupancy;
+
+            return NoContent();
+        }
     }
 
 }
