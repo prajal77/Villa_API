@@ -10,6 +10,12 @@ namespace VillaAPI.Controllers
     [ApiController]//notify the application that its api controller
     public class VillaAPIController : ControllerBase
     {
+        private readonly ILogger<VillaAPIController> _logger;
+
+        public VillaAPIController(ILogger<VillaAPIController> logger)
+        {
+            _logger = logger;
+        }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         // when we work with api different status code need to define we use ActionResult 
@@ -17,6 +23,7 @@ namespace VillaAPI.Controllers
         //iEnumarable helps to return collection fo VillaDTO objects
         public ActionResult <IEnumerable<VillaDTO>> GetVillas()
         {
+            _logger.LogInformation("Getting all villas");
             return Ok(VillaStore.villaList) ;
         }
  
@@ -32,6 +39,7 @@ namespace VillaAPI.Controllers
         {
             if (id == 0)
             {
+                _logger.LogError("Get Villa Error with Id" + id);
                 return BadRequest();
             }
             var villa = VillaStore.villaList.FirstOrDefault(u => u.id == id);
