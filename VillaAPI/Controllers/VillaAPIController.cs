@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using VillaAPI.Data;
 using VillaAPI.Models;
 using VillaAPI.Models.Dto;
@@ -18,15 +19,15 @@ namespace VillaAPI.Controllers
         {
             return Ok(VillaStore.villaList) ;
         }
-        //to give explicit name of the controller
-        [HttpGet("id:int", Name ="GetVilla" )]
+ 
         //[ProducesResponseType(404)]// to document responseTime 
         [ProducesResponseType(400)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-
+        //to give explicit name of the controller
+        [HttpGet("{id:int}", Name = "GetVilla")]
         public ActionResult< VillaDTO> GetVilla(int id)
         {
             if (id == 0)
@@ -123,6 +124,24 @@ namespace VillaAPI.Controllers
             villa.occupancy = villaDTO.occupancy;
 
             return NoContent();
+        }
+
+        [HttpPatch("{id:int}",Name ="UpdatePatchVilla")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDTO> patchDTO )
+        {
+            if(patchDTO == null || id == 0)
+            {
+                return BadRequest();
+            }
+            var villa = VillaStore.villaList.FirstOrDefault(u=>u.id == id);
+            patchDTO.ApplyTo(villa, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent() ;
         }
     }
 
