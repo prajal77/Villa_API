@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Serilog;
+using VillaAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,14 @@ Log.Logger = new LoggerConfiguration().MinimumLevel.Debug()
 /*
 //use serilog instead buildIn log
 builder.Host.UseSerilog();*/
+
+
+// Configures the application to use 'ApplicationDbContext' with SQL Server. 
+// Retrieves the 'DefaultSQLConnections' string from app settings to connect to the database.
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
+{
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnections"));
+});
 
 builder.Services.AddControllers(option =>
 {
